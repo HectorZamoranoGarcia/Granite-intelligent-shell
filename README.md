@@ -11,6 +11,7 @@
  / /_/ / /___/ /___/ ____/___/ / __  / /___/ /___/ /___
 /_____/_____/_____/_/    /____/_/ /_/_____/_____/_____/
       DEEPSHELL POSIX ENGINE by Hector
+```
 
 ## Description
 
@@ -62,6 +63,7 @@ DeepShell/
 │   └── main.c                 # C core and orchestration logic
 ├── .gitignore                 # Exclusion rules for binaries and ephemeral state
 └── README.md                  # System documentation
+```
 
 ## Technologies
 
@@ -86,12 +88,14 @@ Compile the orchestration core:
 
 ```bash
 gcc src/main.c -o bin/dshell.exe
+```
 
 ### 3. Initialization
 Launch the binary. To mitigate initial LLM cold-start latency, the system assumes the Ollama daemon is pre-loaded:
 
 ```bash
 .\bin\dshell.exe
+```
 
 ## Author
 **Hector**
