@@ -1,56 +1,34 @@
-# PROJECT SPECIFICATION: The Granite Shell
-# PROJECT SPECIFICATION: "The Granite Shell" (AI-Native Terminal)
+# PROJECT SPECIFICATION: DeepShell (AI-Native POSIX Engine)
 
 ## 1. Project Overview
-We are building a **High-Performance Command Line Interface (CLI)** written in **C** that integrates **IBM Granite Code** (running locally via Ollama) to translate natural language user requests into executable Bash/Zsh commands.
+Desarrollo de una **Interfaz de Línea de Comandos (CLI) de Alto Rendimiento** escrita en **C** que integra el modelo **DeepSeek-Coder** (ejecutándose localmente vía Ollama) para traducir peticiones en lenguaje natural en comandos POSIX ejecutables.
 
-**Goal:** Create a "smart terminal" where the user can type in plain English (e.g., "Find all PDF files larger than 10MB") and the shell executes the corresponding system command.
+**Objetivo:** Crear un "terminal inteligente" donde el usuario interactúe en lenguaje natural (ej. "crea una carpeta llamada tests y entra en ella") y el shell gestione la ejecución y la persistencia del estado del sistema.
 
 ## 2. Tech Stack & Architecture
-* **Frontend / Core Logic:** C (Standard C99/C11). Handles user input, process management, and command execution.
-* **AI Backend Bridge:** Python 3.x (Intermediary). Handles the HTTP communication with the Ollama API to simplify JSON parsing.
+* **Core Logic:** C (Standard C99). Gestiona el REPL, la renderización de la UI con ANSI colors y la orquestación de procesos.
+* **Cognitive Bridge:** Python 3.x. Intermediario para la comunicación HTTP con la API de Ollama y el saneamiento de respuestas mediante Regex.
 * **AI Engine:** Ollama (Local Inference).
-* **Model:** `ibm-granite/granite-code:latest` (Selected for its coding efficiency and low latency).
+* **Model:** `deepseek-coder:6.7b` (Seleccionado por su superioridad en generación de código y baja latencia).
 
-## 3. Data Flow (The Pipeline)
-1. **Input:** User types natural language prompt into the C shell (e.g., `granite-shell > Create a backup of the src folder`).
-2. **Bridge Call:** The C program invokes the Python script using a pipe or `popen()`, passing the user's string as an argument.
-3. **Inference:** The Python script sends the prompt to the local Ollama endpoint (`http://localhost:11434/api/generate`).
-    * *System Prompt:* "You are a Linux command expert. Translate the following request into a single executable command. Do NOT output markdown or explanations. Output ONLY the command."
-4. **Translation:** IBM Granite returns the command (e.g., `tar -czvf src_backup.tar.gz src/`).
-5. **Return:** Python prints the clean command to `stdout`.
-6. **Capture:** The C program reads the output from the Python script.
-7. **Verification:** C displays: `> Suggested Command: [command]. Execute? (Y/n)`.
-8. **Execution:** If 'Y', C uses `system()` or `fork()` + `execvp()` to run the command on the OS.
+## 3. Advanced Pipeline (State-Sync & Trampoline)
+1.  **Input:** El usuario introduce un prompt en el shell (ej. `deepshell [C:\...] > navega a src`).
+2.  **Inference:** C invoca `bridge/brain.py` pasando el prompt y el contexto del directorio actual (`cwd`).
+3.  **Trampoline Pattern:** Para evitar errores de escape en Windows CMD, la respuesta de la IA se escribe en un script efímero `.trampoline.sh`.
+4.  **Execution:** El núcleo de C invoca `sh.exe` (Git Bash) para ejecutar el script, permitiendo operadores lógicos (`&&`, `|`) nativos de POSIX.
+5.  **State Sync:** El script exporta el nuevo directorio mediante `pwd -W > .shell_cwd`. El proceso padre en C lee este archivo y ejecuta `chdir()` para mantener la persistencia de la navegación.
+6.  **Audit:** Cada par `Input -> POSIX` se registra con timestamp en `docs/history.log`.
 
-## 4. Development Roadmap
-
-### Phase 1: The AI Brain (Python + Ollama)
-* **Task:** Setup Ollama with the IBM Granite Code model.
-* **Deliverable:** A Python script (`brain.py`) that accepts a string arg and returns *only* the executable shell command string.
-
-### Phase 2: The Shell Body (C Language)
-* **Task:** Build the REPL (Read-Eval-Print Loop) in C.
-* **Deliverable:** A C program (`shell.c`) that prints a custom prompt (`granite-shell >`), reads user input safely, and handles the loop.
-
-### Phase 3: The Integration (IPC)
-* **Task:** Connect C and Python.
-* **Implementation:** Use C's `popen()` to call `python3 brain.py "user input"` and read the output stream into a C string buffer.
-
-### Phase 4: Execution & Safety
-* **Task:** Execute the command.
-* **Deliverable:** Implement the execution logic using `system(cmd_buffer)` after user confirmation to prevent accidental destructive commands (like `rm -rf`).
+## 4. Repository Standards
+* **Architecture:** Separación estricta de responsabilidades en carpetas `/src`, `/bin`, `/bridge`, y `/docs`.
+* **Version Control:** Uso de *Conventional Commits* para el historial de Git.
+* **Documentation:** README detallado con diseño ASCII y especificaciones de despliegue.
 
 ## 5. Constraints & Philosophy
-* **Local First:** Must work without internet once the model is downloaded.
-* **Engineering First:** We prioritize using C for the shell to demonstrate systems programming skills (memory management, processes).
-* **Model:** Must strictly use the `ibm-granite` family.
+* **Local-First:** Privacidad total y funcionamiento sin internet.
+* **Senior Engineering:** Gestión manual de memoria, comprobación de punteros `NULL` y uso de `snprintf` para seguridad de buffers.
+* **Style:** Explicaciones en **Español**, comentarios de código en **Inglés** (estándar de industria).
 
-## 6. Copilot Assistant Guidelines
-* **Role:** You are an expert Systems Programmer specialized in C and Linux APIs.
-* **Language:** Provide explanations in **Spanish**, but keep code comments in English (industry standard).
-* **C Style:** - Use strict memory management (always `free` what you `malloc`).
-    - Always check for `NULL` pointers.
-    - Prefer `snprintf` over `sprintf` for safety.
-* **Python Style:** Follow PEP 8.
-* **Context Awareness:** Always remember this is a hybrid C/Python project using Ollama locally.
+## 6. Author & License
+* **Author:** Hector
+* **License:** Standard MIT License
