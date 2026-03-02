@@ -1,50 +1,63 @@
 import sys
+import os
 import requests
 import re
 
-# Configuration
-MODEL_ID = "granite-code"
+MODEL_ID = "deepseek-coder:6.7b"
 API_URL = "http://localhost:11434/api/generate"
 
 def get_command(user_prompt):
-    # Prompt strategy: Ask for a single command
+    # Captura del estado del sistema padre
+    current_dir = os.getcwd().replace('\\', '/')
+
+    SYSTEM_PROMPT = (
+        "You are a strict Unix command translator running on Windows with Git Bash. "
+        f"Current working directory: {current_dir}\n"
+        "Convert natural language requests into raw Unix commands.\n"
+        "RULES:\n"
+        "- Output ONLY the command, nothing else.\n"
+        "- No markdown, no backticks, no explanations.\n"
+        "- Use standard Unix commands (ls, mkdir, rm, find, grep, cd).\n"
+        "- For multiple operations, use && to chain.\n"
+        "- Use 'mkdir -p' to avoid errors if directory exists.\n"
+        "Translate this request:"
+    )
+
     payload = {
         "model": MODEL_ID,
-        "prompt": f"Write a single linux command to: {user_prompt}",
+        "system": SYSTEM_PROMPT,
+        "prompt": user_prompt,
         "stream": False,
-        "options": {
-            "temperature": 0.1
-        }
+        "options": {"temperature": 0.0}
     }
 
     try:
-        # Send the request to the local LLM server and extract the raw text
         response = requests.post(API_URL, json=payload)
-        response.raise_for_status() # Raises an error if HTTP status is 4xx or 5xx
-        raw_text = response.json()['response']
+        response.raise_for_status()
+        raw_text = response.json()['response'].strip()
 
-        # Extract command from code block if present
         code_match = re.search(r"```(?:bash|sh)?\s*(.*?)\s*```", raw_text, re.DOTALL)
-
         if code_match:
             command = code_match.group(1).strip()
         else:
-            # If no code block, take raw text and remove inline backticks
             command = raw_text.strip()
-            if command.startswith("`"):
-                command = command.replace("`", "")
 
-        # Only return the first line to prevent multi-line malicious scripts
+        lines = [l.strip() for l in command.split('\n') if l.strip()]
+        for line in lines:
+            if re.match(r'^(to |sure|here|this|you|the |note:)', line, re.I):
+                continue
+            command = line
+            break
+
+        command = command.strip('`').strip()
         return command.split('\n')[0]
 
     except Exception as e:
-        # In case of error, return a safe echo command
-        return f"echo 'Error: {str(e)}'"
+        return f"echo 'Bridge Error: {str(e)}'"
 
 if __name__ == "__main__":
-    # Read arguments passed from the C program
     if len(sys.argv) > 1:
         prompt = " ".join(sys.argv[1:])
-        print(get_command(prompt)) # Print to stdout so C can read it via pipe
+        print(get_command(prompt), end="")
     else:
-        print("echo 'Error: No input provided'")
+        print("echo 'Error: No input'", end="")

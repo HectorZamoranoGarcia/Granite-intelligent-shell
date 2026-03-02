@@ -2,3 +2,11 @@
 *.o
 __pycache__/
 .env
+
+# Executables
+bin/
+*.exe
+
+# Architecture State Files
+.trampoline.sh
+.shell_cwd
