@@ -98,7 +98,7 @@ Launch the binary. To mitigate initial LLM cold-start latency, the system assume
 ```
 
 ## Author
-**Hector**
+**Héctor Zamorano García**
 
 ## Notes
 * This project was developed for educational purposes to demonstrate the interoperability between low-level system programming and modern AI APIs.
@@ -107,3 +107,4 @@ Launch the binary. To mitigate initial LLM cold-start latency, the system assume
 
 ## License
 Standard MIT License.
+
