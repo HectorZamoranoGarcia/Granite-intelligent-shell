@@ -2,6 +2,13 @@
 
 **Advanced hybrid command-line interface developed in C and Python that utilizes local Artificial Intelligence to translate natural language into native POSIX system commands.**
 
+![C99](https://img.shields.io/badge/C-99-A8B9CC?style=for-the-badge&logo=c&logoColor=white)
+![Python 3.x](https://img.shields.io/badge/python-v3.x-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Ollama](https://img.shields.io/badge/Ollama-latest-FFFFFF?style=for-the-badge&logo=ollama&logoColor=black)
+![DeepSeek 6.7B](https://img.shields.io/badge/DeepSeek-v6.7B-000000?style=for-the-badge&logo=deepseek&logoColor=white)
+![GCC](https://img.shields.io/badge/GCC-GNU-FFD21F?style=for-the-badge&logo=gnu&logoColor=black)
+![Git Bash](https://img.shields.io/badge/Git%20Bash-POSIX-F05032?style=for-the-badge&logo=git&logoColor=white)
+
 # DEEPSHELL (AI-Native POSIX Engine)
 
 ```text
@@ -107,4 +114,5 @@ Launch the binary. To mitigate initial LLM cold-start latency, the system assume
 
 ## License
 Standard MIT License.
+
 
